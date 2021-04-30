@@ -1,26 +1,66 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container grid-lg my-2">
+    <div class="card mb-2" v-if="listenQuotes.length > 0">
+      <div class="card-header">
+        <div class="h4">Acompanhando</div>
+      </div>
+      <div class="card-body">
+        <WatchListQuotes :listen-quotes="listenQuotes" @unlisten="onUnlisten"></WatchListQuotes>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="h4">Todas as moedas</div>
+      </div>
+      <div class="card-body">
+        <ListQuotes
+          :quotes="quotes"
+          :listen-quotes="listenQuotes"
+          @listen="onListen"
+          @unlisten="onUnlisten"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue';
+import { onMounted, reactive, toRefs } from 'vue'
+import api from '@/services/api'
+import ListQuotes from './components/ListQuotes.vue'
+import WatchListQuotes from './components/WatchListQuotes.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
+    ListQuotes,
+    WatchListQuotes,
   },
-};
+  setup() {
+    const data = reactive({
+      quotes: {},
+      listenQuotes: [],
+    })
+
+    onMounted(async () => {
+      const response = await api.all()
+      data.quotes = response.data
+    })
+
+    const methods = reactive({
+      onListen(code) {
+        data.listenQuotes.push(code)
+      },
+
+      onUnlisten(code) {
+        data.listenQuotes = data.listenQuotes.filter((key) => key !== code)
+      },
+    })
+
+    return { ...toRefs(data), ...toRefs(methods) }
+  },
+}
 </script>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style lang="scss"></style>
